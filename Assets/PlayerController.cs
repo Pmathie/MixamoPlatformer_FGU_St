@@ -8,31 +8,44 @@ public class PlayerController : MonoBehaviour
     public float Gravity = -20f;
     public Animator animator;
 
+    private CharacterController controller;
     private Vector2 moveInput;
     private bool jumpQueued;
     private float verticalVelocity;
 
-    // Start is called once before the first execution of Update after the MonoBehaviour is created
-    void Start()
+    private void Awake()
     {
-        
-    }
-
-    // Update is called once per frame
-    void Update()
-    {
-        
+        animator = GetComponent<Animator>();
+        controller = GetComponent<CharacterController>();
     }
     public void OnMove(InputAction.CallbackContext context)
     {
-        Debug.Log("Move: " + context.ReadValue<Vector2>());
+         moveInput = context.ReadValue<Vector2>();
     }
     public void OnJump(InputAction.CallbackContext context)
     {
         if (context.started)
         {
-            Debug.Log("Jump");
+            jumpQueued = true;
         }
+
+    }
+    // Update is called once per frame
+    void Update()
+    {
+        bool isGrounded = controller.isGrounded;
+
+        if(isGrounded && verticalVelocity < 0)
+        {
+            verticalVelocity = -2f;
+        }
+        if(jumpQueued && isGrounded)
+        {
+            verticalVelocity = Mathf.Sqrt(jumpHeight * -2f * Gravity);
+            animator.SetTrigger("Jump");
+        }
+
         
     }
+    
 }
