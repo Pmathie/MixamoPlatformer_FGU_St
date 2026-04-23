@@ -44,8 +44,28 @@ public class PlayerController : MonoBehaviour
             verticalVelocity = Mathf.Sqrt(jumpHeight * -2f * Gravity);
             animator.SetTrigger("Jump");
         }
-
+        jumpQueued = false;
         
+
+        //Movement logic
+        Vector3 MoveDirection = new Vector3(moveInput.x, 0, moveInput.y);
+        Vector3 velocity = MoveDirection * moveSpeed;
+        verticalVelocity += Gravity * Time.deltaTime;
+        velocity.y = verticalVelocity;
+        controller.Move(velocity * Time.deltaTime);
+
+        //Rotation logic
+        if (MoveDirection.magnitude > 0.1f)
+        {
+            Quaternion targetRotation = Quaternion.LookRotation(MoveDirection);
+            transform.rotation = Quaternion.Slerp(transform.rotation, targetRotation, 10f * Time.deltaTime);
+        }
+
+        //Animation logic
+        animator.SetFloat("Speed", MoveDirection.magnitude);
+        animator.SetBool("Grounded", isGrounded);
+        animator.SetFloat("VerticalVelocity", verticalVelocity);
+
     }
     
 }
