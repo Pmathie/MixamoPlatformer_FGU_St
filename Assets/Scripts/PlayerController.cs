@@ -17,6 +17,8 @@ public class PlayerController : MonoBehaviour
     public int maxJumps = 2;
     private int jumpCount;
 
+    private Transform currentPlatform;
+
     private void Awake()
     {
         animator = GetComponent<Animator>();
@@ -90,6 +92,23 @@ public class PlayerController : MonoBehaviour
         }
         animator.SetFloat("Speed", MoveDirection.magnitude);
         animator.SetFloat("VerticalVelocity", verticalVelocity);
+    }
+    private void CheckForPlatform()
+    {
+        RaycastHit hit;
+        if (Physics.Raycast(transform.position, Vector3.down, out hit, 0.5f))
+        {
+            if(hit.collider.TryGetComponent<MovingPlatform>(out var platform))
+            {
+                currentPlatform = platform.transform;
+
+            }
+        }
+        else
+        {
+            currentPlatform = null;
+        }
+            
     }
 
     
