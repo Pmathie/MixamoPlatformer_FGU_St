@@ -13,6 +13,9 @@ public class PlayerController : MonoBehaviour
     private bool jumpQueued;
     private float verticalVelocity;
     private Transform cameraTransform;
+    private bool isGrounded;
+    public int maxJumps = 2;
+    private int jumpCount;
 
     private void Awake()
     {
@@ -35,28 +38,38 @@ public class PlayerController : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
-        bool isGrounded = controller.isGrounded;
+        JumpLogic();
+        Movement();
+    }
+    private void JumpLogic()
+    {
+        isGrounded = controller.isGrounded;
+        animator.SetBool("Grounded", isGrounded);
 
-        if(isGrounded && verticalVelocity < 0)
+        if (isGrounded && verticalVelocity < 0)
         {
             verticalVelocity = -2f;
+            jumpCount = 0;
         }
-        if(jumpQueued && isGrounded)
+        if (jumpQueued && jumpCount < maxJumps)
         {
+            jumpCount++;
             verticalVelocity = Mathf.Sqrt(jumpHeight * -2f * Gravity);
             animator.SetTrigger("Jump");
         }
         jumpQueued = false;
-        
 
+    }
+    private void Movement()
+    {
         //Movement logic
-        Vector3 forward = cameraTransform.forward; 
+        Vector3 forward = cameraTransform.forward;
         Vector3 right = cameraTransform.right;
         forward.y = 0;
         right.y = 0;
         forward.Normalize();
         right.Normalize();
-        Vector3 MoveDirection = moveInput.x*right +  moveInput.y*forward;
+        Vector3 MoveDirection = moveInput.x * right + moveInput.y * forward;
         Debug.Log($"MoveDirection: {MoveDirection.magnitude}");
 
         if (MoveDirection.magnitude > 1f)
@@ -75,12 +88,9 @@ public class PlayerController : MonoBehaviour
             Quaternion targetRotation = Quaternion.LookRotation(MoveDirection);
             transform.rotation = Quaternion.Slerp(transform.rotation, targetRotation, 10f * Time.deltaTime);
         }
-
-        //Animation logic
         animator.SetFloat("Speed", MoveDirection.magnitude);
-        animator.SetBool("Grounded", isGrounded);
         animator.SetFloat("VerticalVelocity", verticalVelocity);
-
     }
+
     
 }
