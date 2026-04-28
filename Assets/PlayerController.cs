@@ -12,11 +12,13 @@ public class PlayerController : MonoBehaviour
     private Vector2 moveInput;
     private bool jumpQueued;
     private float verticalVelocity;
+    private Transform cameraTransform;
 
     private void Awake()
     {
         animator = GetComponent<Animator>();
         controller = GetComponent<CharacterController>();
+        cameraTransform = Camera.main.transform;
     }
     public void OnMove(InputAction.CallbackContext context)
     {
@@ -48,7 +50,20 @@ public class PlayerController : MonoBehaviour
         
 
         //Movement logic
-        Vector3 MoveDirection = new Vector3(moveInput.x, 0, moveInput.y);
+        Vector3 forward = cameraTransform.forward; 
+        Vector3 right = cameraTransform.right;
+        forward.y = 0;
+        right.y = 0;
+        forward.Normalize();
+        right.Normalize();
+        Vector3 MoveDirection = moveInput.x*right +  moveInput.y*forward;
+        Debug.Log($"MoveDirection: {MoveDirection.magnitude}");
+
+        if (MoveDirection.magnitude > 1f)
+        {
+            MoveDirection.Normalize();
+        }
+
         Vector3 velocity = MoveDirection * moveSpeed;
         verticalVelocity += Gravity * Time.deltaTime;
         velocity.y = verticalVelocity;
