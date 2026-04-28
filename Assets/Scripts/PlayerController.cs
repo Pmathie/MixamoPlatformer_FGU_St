@@ -101,15 +101,11 @@ public class PlayerController : MonoBehaviour
             if(hit.collider.TryGetComponent<MovingPlatform>(out var platform))
             {
                 currentPlatform = platform.transform;
-
             }
         }
         else
         {
             currentPlatform = null;
-        }
-            
-    }
-
-    
+        }       
+    }    
 }
