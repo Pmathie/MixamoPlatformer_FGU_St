@@ -18,6 +18,7 @@ public class PlayerController : MonoBehaviour
     private int jumpCount;
 
     private Transform currentPlatform;
+    private Vector3 lastPlatformPosition;
 
     private void Awake()
     {
@@ -40,6 +41,7 @@ public class PlayerController : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
+        CheckForPlatform();
         JumpLogic();
         Movement();
     }
@@ -82,7 +84,7 @@ public class PlayerController : MonoBehaviour
         Vector3 velocity = MoveDirection * moveSpeed;
         verticalVelocity += Gravity * Time.deltaTime;
         velocity.y = verticalVelocity;
-        controller.Move(velocity * Time.deltaTime);
+        controller.Move(velocity * Time.deltaTime + PlatformMovement());
 
         //Rotation logic
         if (MoveDirection.magnitude > 0.1f)
@@ -101,11 +103,30 @@ public class PlayerController : MonoBehaviour
             if(hit.collider.TryGetComponent<MovingPlatform>(out var platform))
             {
                 currentPlatform = platform.transform;
+                
+                if (lastPlatformPosition == Vector3.zero)
+                {
+                    lastPlatformPosition = currentPlatform.position;
+                }   
             }
         }
         else
         {
             currentPlatform = null;
         }       
-    }    
+    }
+    private Vector3 PlatformMovement()
+    {
+        if (currentPlatform != null)
+        {
+            Vector3 platformMovement = currentPlatform.position - lastPlatformPosition;
+            lastPlatformPosition = currentPlatform.position;
+            return platformMovement;
+        }
+        else
+        {
+            lastPlatformPosition = Vector3.zero;
+            return Vector3.zero;
+        }
+    }
 }
