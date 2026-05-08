@@ -6,7 +6,6 @@ public class MovingPlatform : MonoBehaviour
     public Transform pointB;
     public float speed = 2f;
     private Transform target;
-
     // Start is called once before the first execution of Update after the MonoBehaviour is created
     void Start()
     {
