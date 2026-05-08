@@ -1,30 +1,17 @@
 using UnityEngine;
-using UnityEngine.SceneManagement;
 
-public class KillCollider : MonoBehaviour
+public class Kill : MonoBehaviour
 {
-    // Start is called once before the first execution of Update after the MonoBehaviour is created
-    void Start()
+    void OnTriggerEnter(Collider other)
     {
-        
-    }
-
-    // Update is called once per frame
-    void Update()
-    {
-        
-    }
-    private void OnTriggerEnter(Collider other)
-    {
-        if (other.GetComponent<PlayerController>())
+        Debug.Log(optionalsaves.SavePoint.transform.position);
+        if(other.tag == "Player")
         {
-            // Genindlæser den nuværende scene hvis spilleren kolliderer med killcollideren
-            ReloadCurrentScene();
+            other.GetComponent<PlayerController>().enabled = false;
+            other.GetComponent<CharacterController>().enabled = false;
+            other.transform.position = optionalsaves.SavePoint.transform.position + new Vector3(0, 2, 0);
+            other.GetComponent<CharacterController>().enabled = true;
+            other.GetComponent<PlayerController>().enabled = true;
         }
-    }
-    void ReloadCurrentScene()
-    {
-       
-        SceneManager.LoadScene(SceneManager.GetActiveScene().name);
     }
 }

@@ -19,12 +19,16 @@ public class PlayerController : MonoBehaviour
 
     private Transform currentPlatform;
     private Vector3 lastPlatformPosition;
+    public Vector3 SameFuncs;
+    public GameObject Empty;
+    public MovingPlatform1 YeNo;
 
     private void Awake()
     {
         animator = GetComponent<Animator>();
         controller = GetComponent<CharacterController>();
         cameraTransform = Camera.main.transform;
+        Cursor.lockState = CursorLockMode.Locked;
     }
     public void OnMove(InputAction.CallbackContext context)
     {
@@ -64,54 +68,45 @@ public class PlayerController : MonoBehaviour
         jumpQueued = false;
 
     }
-    private void Movement()
-    {
-        //Movement logic
-        Vector3 forward = cameraTransform.forward;
-        Vector3 right = cameraTransform.right;
-        forward.y = 0;
-        right.y = 0;
-        forward.Normalize();
-        right.Normalize();
-        Vector3 MoveDirection = moveInput.x * right + moveInput.y * forward;
-        Debug.Log($"MoveDirection: {MoveDirection.magnitude}");
-
-        if (MoveDirection.magnitude > 1f)
-        {
-            MoveDirection.Normalize();
-        }
-
-        Vector3 velocity = MoveDirection * moveSpeed;
-        verticalVelocity += Gravity * Time.deltaTime;
-        velocity.y = verticalVelocity;
-        controller.Move(velocity * Time.deltaTime + PlatformMovement());
-
-        //Rotation logic
-        if (MoveDirection.magnitude > 0.1f)
-        {
-            Quaternion targetRotation = Quaternion.LookRotation(MoveDirection);
-            transform.rotation = Quaternion.Slerp(transform.rotation, targetRotation, 10f * Time.deltaTime);
-        }
-        animator.SetFloat("Speed", MoveDirection.magnitude);
-        animator.SetFloat("VerticalVelocity", verticalVelocity);
-    }
     private void CheckForPlatform()
     {
         RaycastHit hit;
         if (Physics.Raycast(transform.position, Vector3.down, out hit, 0.5f))
         {
-            if(hit.collider.TryGetComponent<MovingPlatform>(out var platform))
+            if(transform.parent != hit.collider.gameObject.transform)
             {
-                currentPlatform = platform.transform;
-                
-                if (lastPlatformPosition == Vector3.zero)
+                if(hit.collider.gameObject.transform.childCount == 0)
                 {
-                    lastPlatformPosition = currentPlatform.position;
-                }   
+                    Instantiate(Empty, hit.collider.gameObject.transform);
+                    transform.SetParent(hit.collider.gameObject.transform.GetChild(0));
+                }
+                else
+                {
+                    transform.SetParent(hit.collider.gameObject.transform.GetChild(0));
+                }
+                
+            }
+            if(hit.collider.TryGetComponent<MovingPlatform1>(out var platforms))
+            {
+                if(YeNo != platforms&&YeNo != null)
+                {
+                    Debug.Log("FALSE");
+                    YeNo.PlayerOn = false;
+                    YeNo = platforms;
+                }
+                platforms.PlayerOn = true;
+                YeNo = platforms;
             }
         }
         else
         {
+            if(YeNo != null)
+            {
+                Debug.Log("FALSE");
+                YeNo.PlayerOn = false;
+                YeNo = null;
+            }
+            transform.SetParent(null);
             currentPlatform = null;
         }       
     }
@@ -129,4 +124,36 @@ public class PlayerController : MonoBehaviour
             return Vector3.zero;
         }
     }
+    private void Movement()
+    {
+        //Movement logic
+        Vector3 forward = cameraTransform.forward;
+        Vector3 right = cameraTransform.right;
+        forward.y = 0;
+        right.y = 0;
+        forward.Normalize();
+        right.Normalize();
+        Vector3 MoveDirection = moveInput.x * right + moveInput.y * forward;
+        //Debug.Log($"MoveDirection: {MoveDirection.magnitude}");
+
+        if (MoveDirection.magnitude > 1f)
+        {
+            MoveDirection.Normalize();
+        }
+
+        Vector3 velocity = MoveDirection * moveSpeed;
+        verticalVelocity += Gravity * Time.deltaTime;
+        velocity.y = verticalVelocity;
+        controller.Move((velocity * Time.deltaTime) + PlatformMovement());
+
+        //Rotation logic
+        if (MoveDirection.magnitude > 0.1f)
+        {
+            Quaternion targetRotation = Quaternion.LookRotation(MoveDirection);
+            transform.rotation = Quaternion.Slerp(transform.rotation, targetRotation, 10f * Time.deltaTime);
+        }
+        animator.SetFloat("Speed", MoveDirection.magnitude);
+        animator.SetFloat("VerticalVelocity", verticalVelocity);
+    }
+    
 }
